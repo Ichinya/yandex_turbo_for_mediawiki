@@ -1,0 +1,15 @@
+{
+  "action": "query",
+  "format": "json",
+  "curtimestamp": 1,
+  "prop": "",
+  "list": "recentchanges",
+  "iwurl": 1,
+  "rawcontinue": 1,
+  "utf8": 1,
+  "formatversion": "2",
+  "rcdir": "older",
+  "rcprop": "title|timestamp|ids",
+  "rclimit": "500",
+  "rctoponly": 1
+}
