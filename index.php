@@ -11,6 +11,8 @@ spl_autoload_register(function ($class) {
 $list = new cPageList($config['urlAPI']);
 $parse = new cParse($config['urlAPI']);
 echo "<pre>";
-print_r($parse->updatePageByParse($list->listPage[2]));
+$db = new cDB();
+print_r($db->checkTable());
+//print_r($parse->updatePageByParse($list->listPage[1]));
 echo "</pre>";
 
