@@ -7,6 +7,11 @@ class cContent
     protected $fileParams;
     protected $params;
 
+    /**
+     * считываем настройки обращения к АПИ mediawiki
+     * cContent constructor.
+     * @param array настройки
+     */
     public function __construct($urlAPI)
     {
         $this->urlAPI = $urlAPI;
@@ -15,21 +20,30 @@ class cContent
             die();
         }
         $json = file_get_contents($this->fileParams);
-        $this->params = json_decode($json, true);
+        return $this->params = json_decode($json, true);
     }
 
-    protected function getContent($params)
+    /**
+     * получаем данные от АПИ
+     * @param array $params параметры обращения
+     * @return array данные от АПИ
+     */
+    protected function getContent(array $params): array
     {
         $url = $this->urlAPI . "?" . http_build_query($params);
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $output = curl_exec($ch);
         curl_close($ch);
-//        print_r($output);
         return json_decode($output, true);
     }
 
-    protected function getContentAll($params)
+    /**
+     * при запросах, где ответы от АПИ превышают одну страницу - считываем все страницы
+     * @param array $params параметры обращения к АПИ
+     * @return array ответ от АПИ
+     */
+    protected function getContentAll(array $params): array
     {
         $out = $this->getContent($params);
         $result = $out['query']['recentchanges'];

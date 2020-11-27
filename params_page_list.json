@@ -9,7 +9,7 @@
   "utf8": 1,
   "formatversion": "2",
   "rcdir": "older",
-  "rcprop": "title|timestamp|ids",
+  "rcprop": "title|timestamp|ids|revid|user",
   "rclimit": "500",
   "rctoponly": 1
 }

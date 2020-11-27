@@ -1,0 +1,9 @@
+{
+	"action": "query",
+	"format": "json",
+	"prop": "info",
+	"pageids": "",
+	"utf8": 1,
+	"formatversion": "2",
+	"inprop": "url"
+}

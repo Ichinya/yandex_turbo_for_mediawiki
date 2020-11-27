@@ -2,6 +2,8 @@
   "action": "parse",
   "format": "json",
   "pageid": "",
+  "prop": "text|categories|categorieshtml|revid|langlinks|headhtml|url",
   "disableeditsection": 1,
   "utf8": 1
+	
 }
