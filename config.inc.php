@@ -1,6 +1,14 @@
 <?php
+$server = $_SERVER['HTTP_HOST'];
 return [
-    'urlAPI' => $_SERVER['HTTP_HOST'] . "/api.php", // урл API wiki
-    'defaultAuthor' => 'Администратор', // если не найден автор статьи, то будет подставляться этот
-    'replaceAuthor' => false // меняет авторов статей на defaultAuthor
+    'server' => $server,
+    'here' => $server . $_SERVER['REQUEST_URI'],
+    // урл API wiki
+    'urlAPI' => $server . "/api.php",
+    // если не найден автор статьи, то будет подставляться этот
+    'defaultAuthor' => 'Администратор',
+    // меняет авторов статей на defaultAuthor
+    'replaceAuthor' => false,
+    // шаблон по-умолчанию
+    'defaultTemplate' => 'turbo'
 ];

@@ -4,6 +4,7 @@ $config = require_once('config.inc.php');
 spl_autoload_register(function ($class) {
     $file = $class . '.php';
     if (is_file($file)) {
+        /** @noinspection PhpIncludeInspection */
         require_once $file;
     }
 });
@@ -12,15 +13,6 @@ spl_autoload_register(function ($class) {
 $list = new cPageList($config);
 // модуль парсинга страниц
 $parse = new cParse($config['urlAPI']);
-echo "<pre>";
-print_r($list->listPage);
-$db = new cDB();
-//print_r($ids = $db->getEmptyUrl());
-//print_r($parse->parseUrlByIds($ids));
-//print_r($parse->parsePageByPageId(3));
-
-
-
 
 // проверяем все страницы
 foreach ($list->listPage as $page) {
@@ -28,7 +20,20 @@ foreach ($list->listPage as $page) {
     $parse->updateCacheByPageId($page);
 }
 
-//print_r($_GET);
+// модуль формирования RSS
+$rssTemplate = isset($_GET['template']) ? $_GET['template'] : $config['defaultTemplate'];
+$rss = new cRSS($rssTemplate);
 
-echo "</pre>";
-
+if (isset($_GET['page'])) {
+    // формируем страницу rss
+    $listPages= $list->getPageList($_GET['page'], $rss->getMaxCount());
+    $lenta = $rss->generateRSS($listPages);
+    print_r($lenta);
+} else {
+    // формируем список rss
+    $countPage = ceil($list->countPage() / $rss->getMaxCount());
+    for ($i = 0; $i < $countPage; $i++) {
+        $strTemplate = ($config['defaultTemplate'] == $rssTemplate)? '': "template={$rssTemplate}&";
+        echo $str = "http://{$config['here']}?{$strTemplate}page={$i}<br />";
+    }
+}

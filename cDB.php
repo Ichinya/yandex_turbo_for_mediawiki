@@ -44,6 +44,25 @@ class cDB
         return $result;
     }
 
+    public function getCountPage()
+    {
+        $sql = "SELECT COUNT() as count FROM page";
+        $query = $this->db->query($sql);
+        return $query->fetchArray(SQLITE3_ASSOC)['count'];
+    }
+
+    public function getPageList(int $page, int $count)
+    {
+        $offset = $count * $page;
+        $sql = "SELECT * FROM page LIMIT {$count} OFFSET {$offset};";
+        $query = $this->db->query($sql);
+        $result = [];
+        while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
+            $result[] = $row;
+        }
+        return $result;
+    }
+
     /**
      * Заполняем таблицу ссылками на страницы
      * @param array $data массив с id страницы => ссылка страницы
@@ -66,6 +85,18 @@ class cDB
         return true;
     }
 
+    private function clearText($text)
+    {
+        $templateClear = [
+            '/(class|decoding|title|style|width|height)=".+"/mU',
+            '~<!--(?!<!)[^\[>].*?-->~s'
+        ];
+        foreach ($templateClear as $template) {
+            $text = preg_replace($template, '', $text);
+        }
+        return $text;
+    }
+
     public function updateCache(cPage $page)
     {
         if ($this->getPageById($page->id)) {
@@ -81,7 +112,7 @@ class cDB
         $query->bindValue(':revid', $page->revid);
         $query->bindValue(':user', $page->user);
         $query->bindValue(':title', $page->title);
-        $query->bindValue(':text', $page->text);
+        $query->bindValue(':text', $this->clearText($page->text));
         $query->bindValue(':updateAt', $page->updateAt);
         $query->bindValue(':categories', implode(',', $page->categories));
 

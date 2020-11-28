@@ -3,9 +3,8 @@
 
 class cParse extends cContent
 {
-    protected $fileParams;
-    protected $paramsParseUrl;
-    protected $db;
+    protected array $paramsParseUrl;
+    protected cDB $db;
 
     public function __construct($urlAPI)
     {

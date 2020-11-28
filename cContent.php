@@ -4,7 +4,7 @@
 class cContent
 {
     protected $urlAPI;
-    protected $fileParams;
+    protected string $fileParams;
     protected $params;
 
     /**
