@@ -52,9 +52,9 @@ class cParse extends cContent
     /**
      * получаем данные страницы (текст в формате html и список категорий)
      * @param int $id ИД страницы
-     * @return array массив с данными
+     * @return array|null массив с данными
      */
-    private function parsePageByPageId(int $id): array
+    private function parsePageByPageId(int $id)
     {
         $params = $this->params;
         $params['pageid'] = $id;
@@ -69,6 +69,9 @@ class cParse extends cContent
     private function updatePageByPage(cPage &$page)
     {
         $parse = $this->parsePageByPageId($page->id);
+        if (!is_array($parse)) {
+            return false;
+        }
         $page->text = $parse['text']['*'];
         $page->revid = $parse['revid'];
         if (is_array($parse['categories'])) {

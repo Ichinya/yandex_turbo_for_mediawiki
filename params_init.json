@@ -1,0 +1,10 @@
+{
+	"action": "query",
+	"format": "json",
+	"list": "allpages",
+	"iwurl": 1,
+	"rawcontinue": 1,
+	"aplimit": "2",
+	"utf8": 1,
+	"formatversion": "2"
+}

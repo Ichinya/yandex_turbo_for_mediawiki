@@ -3,7 +3,7 @@
 
 class cContent
 {
-    protected $urlAPI;
+    protected string $urlAPI;
     protected string $fileParams;
     protected $params;
 
@@ -21,6 +21,15 @@ class cContent
         }
         $json = file_get_contents($this->fileParams);
         return $this->params = json_decode($json, true);
+    }
+
+    public function initParamFile($file)
+    {
+        if (!file_exists($file)) {
+            return false;
+        }
+        $json = file_get_contents($file);
+        return json_decode($json, true);
     }
 
     /**
@@ -41,16 +50,18 @@ class cContent
     /**
      * при запросах, где ответы от АПИ превышают одну страницу - считываем все страницы
      * @param array $params параметры обращения к АПИ
-     * @return array ответ от АПИ
+     * @return array|null ответ от АПИ
      */
-    protected function getContentAll(array $params): array
+    protected function getContentAll(array $params)
     {
         $out = $this->getContent($params);
-        $result = $out['query']['recentchanges'];
-        while ($out['query-continue']['recentchanges']['rccontinue'] != "") {
-            $params['rccontinue'] = $out['query-continue']['recentchanges']['rccontinue'];
+        $result = $out['query'][$params['list']];
+        while ($out['query-continue'][$params['list']]['rccontinue'] != "" ||
+            $out['query-continue'][$params['list']]['apcontinue'] != "") {
+            $params['rccontinue'] = $out['query-continue'][$params['list']]['rccontinue'];
+            $params['apcontinue'] = $out['query-continue'][$params['list']]['apcontinue'];
             $out = $this->getContent($params);
-            $result = array_merge($result, $out['query']['recentchanges']);
+            $result = array_merge($result, $out['query'][$params['list']]);
         }
         return $result;
     }

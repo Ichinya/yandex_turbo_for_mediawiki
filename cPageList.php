@@ -15,6 +15,21 @@ class cPageList extends cContent
         $this->getPages();
     }
 
+    public function init()
+    {
+        $params = $this->initParamFile("params_init.json");
+        $pagesIndex = $this->getContentAll($params);
+        $pages = [];
+        foreach ($pagesIndex as $pageIndex) {
+            $page = new cPage(
+                $pageIndex['pageid'],
+                $pageIndex['title'],
+                date(DATE_RFC822, 0));
+            $pages[] = $page;
+        }
+        return $pages;
+    }
+
     function getPages()
     {
         $list = $this->getContentAll($this->params);
@@ -62,6 +77,12 @@ class cPageList extends cContent
         $db = new cDB();
         $pageDB = $db->getPageById($id);
         return $this->convertArrayToPage($pageDB);
+    }
+
+    public function countPageDB()
+    {
+        $db = new cDB();
+        return $db->getCountPage();
     }
 
     public function countPage()
