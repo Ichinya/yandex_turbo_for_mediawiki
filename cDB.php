@@ -8,10 +8,11 @@ class cDB
     public function __construct()
     {
         $this->db = new SQLite3("cache.db");
-        return $this->createTable();
+        $this->createTablePage();
+        $this->createTableConfig();
     }
 
-    public function createTable()
+    private function createTablePage()
     {
         $sql = "CREATE TABLE IF NOT EXISTS page (
                 id INTEGER UNIQUE, 
@@ -25,12 +26,57 @@ class cDB
         return $this->db->exec($sql);
     }
 
+    private function createTableConfig()
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS config (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+                name VARCHAR UNIQUE ,
+                value varchar)";
+        return $this->db->exec($sql);
+    }
+
+    public function getConfig($name)
+    {
+        $sql = "SELECT * FROM config WHERE name = :name;";
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':name', $name);
+        return $query->execute()->fetchArray(SQLITE3_ASSOC);
+    }
+
+    public function setConfig($name, $value)
+    {
+        if ($this->getConfig($name) == false) {
+            $sql = "INSERT INTO config (name, value) 
+                VALUES (:name, :value)";
+        } else {
+            $sql = "UPDATE config SET value = :value WHERE name = :name";
+        }
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':name', $name);
+        $query->bindValue(':value', $value);
+        if (!$query->execute()) {
+            return false;
+        }
+        return true;
+    }
+
     public function getPageById(int $id)
     {
         $sql = "SELECT * FROM page WHERE id = :id;";
         $query = $this->db->prepare($sql);
         $query->bindValue(':id', $id);
         return $query->execute()->fetchArray(SQLITE3_ASSOC);
+    }
+
+    public function getEmptyPagesId()
+    {
+        $sql = "SELECT id FROM page WHERE revid is null";
+        $query = $this->db->query($sql);
+        $result = [];
+        while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
+            $result[$row['id']] = $row['id'];
+        }
+        return $result;
     }
 
     public function getEmptyUrl()
@@ -54,10 +100,19 @@ class cDB
     public function getPageList(int $page, int $count)
     {
         $offset = $count * $page;
-        $sql = "SELECT * FROM page LIMIT {$count} OFFSET {$offset};";
+        $sql = "SELECT * FROM page WHERE url not null ORDER BY updateAt ASC LIMIT {$count} OFFSET {$offset};";
         $query = $this->db->query($sql);
         $result = [];
         while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
+            if (preg_match('/Файл:.+/m', $row['title'])) {
+                continue;
+            }
+            if (preg_match('/Категория:.+/m', $row['title'])) {
+                continue;
+            }
+            if (preg_match('/Шаблон:.+/m', $row['title'])) {
+                continue;
+            }
             $result[] = $row;
         }
         return $result;
@@ -89,7 +144,8 @@ class cDB
     {
         $templateClear = [
             '/(class|decoding|title|style|width|height)=".+"/mU',
-            '~<!--(?!<!)[^\[>].*?-->~s'
+            '~<!--(?!<!)[^\[>].*?-->~s',
+            '/href="#[^"]+"/m'
         ];
         foreach ($templateClear as $template) {
             $text = preg_replace($template, '', $text);
@@ -101,7 +157,7 @@ class cDB
     {
         if ($this->getPageById($page->id)) {
             $sql = "UPDATE page 
-            SET revid = :revid, user = :user, title = :title, text=:text,updateAt=:updateAt,categories=:categories 
+            SET revid = :revid, user = :user, title = :title, text=:text, updateAt=:updateAt, categories=:categories 
             WHERE id = :id";
         } else {
             $sql = "INSERT INTO page (id,revid,user,title,text,updateAt,categories) 

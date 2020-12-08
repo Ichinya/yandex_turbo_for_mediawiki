@@ -36,13 +36,14 @@ $header = "<header>
     <author><?= $page->user; ?></author>
     <metrics>
         <yandex schema_identifier="<?= $page->id; ?>">
-            <breadcrumblist>
+          <?/*  <breadcrumblist>
                 <?
                 foreach ($breadcrumblist as $breadcrumb) {
                     echo "<breadcrumb url=\"{$config['link']}/{$breadcrumb['url']}\" text=\"{$breadcrumb['text']}\" /></breadcrumb>";
                 }
                 ?>
             </breadcrumblist>
+*/ ?>
         </yandex>
     </metrics>
     <yandex:related></yandex:related>

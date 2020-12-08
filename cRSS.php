@@ -28,6 +28,7 @@ class cRSS
      */
     public function generateRSS(array $pages)
     {
+        header('Content-Type: application/xml; charset=utf-8');
         $items = [];
         foreach ($pages as $page) {
             $items[] = $this->getPartTemplate('item', ['config' => $this->params, 'page' => $page]);

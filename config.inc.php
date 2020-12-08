@@ -6,7 +6,7 @@ return [
     // урл API wiki
     'urlAPI' => $server . "/api.php",
     // если не найден автор статьи, то будет подставляться этот
-    'defaultAuthor' => 'Администратор',
+    'defaultAuthor' => 'Admin',
     // меняет авторов статей на defaultAuthor
     'replaceAuthor' => false,
     // шаблон по-умолчанию

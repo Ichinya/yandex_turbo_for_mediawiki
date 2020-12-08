@@ -12,8 +12,6 @@ echo'<?xml version="1.0" encoding="UTF-8"?>'; ?>
         <link><?= $config['link']; ?></link>
         <description><?= $config['description']; ?></description>
         <language>ru</language>
-        <turbo:analytics></turbo:analytics>
-        <turbo:adNetwork></turbo:adNetwork>
         <?php echo implode('', $data['items']); ?>
     </channel>
 </rss>

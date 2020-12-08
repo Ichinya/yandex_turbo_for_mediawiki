@@ -6,13 +6,15 @@ class cPageList extends cContent
     public array $listPage = [];
     private string $author;
     private bool $replaceAuthor;
+    private cDB $db;
 
     public function __construct($config)
     {
         parent::__construct($config['urlAPI']);
         $this->author = $config['defaultAuthor'];
         $this->replaceAuthor = $config['replaceAuthor'];
-        $this->getPages();
+        //$this->getPages();
+        $this->db = new cDB();
     }
 
     public function init()
@@ -24,7 +26,8 @@ class cPageList extends cContent
             $page = new cPage(
                 $pageIndex['pageid'],
                 $pageIndex['title'],
-                date(DATE_RFC822, 0));
+                date(DATE_RFC822, time() - 86400));
+            $page->author = $this->author;
             $pages[] = $page;
         }
         return $pages;
@@ -51,8 +54,7 @@ class cPageList extends cContent
 
     public function getPageList(int $page, int $count): array
     {
-        $db = new cDB();
-        $pagesDB = $db->getPageList($page, $count);
+        $pagesDB = $this->db->getPageList($page, $count);
         $pages = [];
         foreach ($pagesDB as $pageDB) {
             $pages[] = $this->convertArrayToPage($pageDB);
@@ -60,12 +62,17 @@ class cPageList extends cContent
         return $pages;
     }
 
+    public function getEmptyPages()
+    {
+        return $this->db->getEmptyPagesId();
+    }
+
     private function convertArrayToPage(array $pageDB): cPage
     {
         $page = new cPage($pageDB['id'], $pageDB['title'], $pageDB['updateAt']);
         $page->url = $pageDB['url'];
         $page->updateAt = $pageDB ['updateAt'];
-        $page->categories = explode(',', $pageDB['categories']);
+        $page->categories = ($pageDB['categories'] == '') ? [] : explode(',', $pageDB['categories']);
         $page->user = $pageDB['user'];
         $page->text = $pageDB['text'];
         $page->revid = $pageDB['revid'];
@@ -74,20 +81,33 @@ class cPageList extends cContent
 
     public function getPageId($id)
     {
-        $db = new cDB();
-        $pageDB = $db->getPageById($id);
+        $pageDB = $this->db->getPageById($id);
         return $this->convertArrayToPage($pageDB);
     }
 
     public function countPageDB()
     {
-        $db = new cDB();
-        return $db->getCountPage();
+        return $this->db->getCountPage();
     }
 
     public function countPage()
     {
         return count($this->listPage);
+    }
+
+    public function getConfigDB($name)
+    {
+        return $this->db->getConfig($name);
+    }
+
+    public function setConfigDB($name, $value)
+    {
+        return $this->db->setConfig($name, $value);
+    }
+
+    public function savePageDB(cPage $page)
+    {
+        return $this->db->updateCache($page);
     }
 
 }

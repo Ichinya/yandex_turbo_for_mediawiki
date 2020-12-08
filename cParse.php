@@ -76,6 +76,9 @@ class cParse extends cContent
         $page->revid = $parse['revid'];
         if (is_array($parse['categories'])) {
             foreach ($parse['categories'] as $category) {
+                if (trim($category['*']) == '') {
+                    continue;
+                }
                 $page->categories[] = $category['*'];
             }
         }
@@ -92,7 +95,7 @@ class cParse extends cContent
         // получаем данные из БД
         $pageCache = $this->db->getPageById($page->id);
         // нет страницы в кэше
-        if (!$pageCache || $page->updateAt > $pageCache['updateAt']) {
+        if (!$pageCache || $page->updateAt > $pageCache['updateAt'] || empty($page->revid)) {
             // парсим страницу и записываем в БД
             $this->updatePageByPage($page);
             $this->db->updateCache($page);
