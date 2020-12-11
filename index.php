@@ -14,6 +14,8 @@ $list = new cPageList($config);
 // модуль парсинга страниц
 $parse = new cParse($config['urlAPI']);
 
+print_r($list->getConfigDB('init')); die();
+
 // инициализация кэша, если первый запуск, заполняем БД текущими статьями
 if (!$list->getConfigDB('init')) {
     if (!$list->getConfigDB('indexPage')) {

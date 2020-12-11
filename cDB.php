@@ -35,17 +35,29 @@ class cDB
         return $this->db->exec($sql);
     }
 
+    /**
+     * получение параметра из БД
+     * @param string $name имя параметра
+     * @return string|false строковое значение параметра или false
+     */
     public function getConfig($name)
     {
         $sql = "SELECT * FROM config WHERE name = :name;";
         $query = $this->db->prepare($sql);
         $query->bindValue(':name', $name);
-        return $query->execute()->fetchArray(SQLITE3_ASSOC);
+        $res =  $query->execute()->fetchArray(SQLITE3_ASSOC);
+        return $res['value'];
     }
 
+    /**
+     * Запись или обновление параметра в БД
+     * @param string $name имя парамтра
+     * @param string $value значение параметра
+     * @return bool
+     */
     public function setConfig($name, $value)
     {
-        if ($this->getConfig($name) == false) {
+        if ($this->getConfig($name) === false) {
             $sql = "INSERT INTO config (name, value) 
                 VALUES (:name, :value)";
         } else {
@@ -145,7 +157,8 @@ class cDB
         $templateClear = [
             '/(class|decoding|title|style|width|height)=".+"/mU',
             '~<!--(?!<!)[^\[>].*?-->~s',
-            '/href="#[^"]+"/m'
+            '/href="#[^"]+"/m',
+            '/href="\/[^"]+"/m'
         ];
         foreach ($templateClear as $template) {
             $text = preg_replace($template, '', $text);
