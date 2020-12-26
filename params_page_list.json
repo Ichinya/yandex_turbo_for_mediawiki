@@ -2,7 +2,6 @@
   "action": "query",
   "format": "json",
   "curtimestamp": 1,
-  "prop": "",
   "list": "recentchanges",
   "iwurl": 1,
   "rawcontinue": 1,
@@ -10,5 +9,6 @@
   "formatversion": "2",
   "rcdir": "older",
   "rcprop": "title|timestamp|ids|user",
-  "rclimit": "500"
+  "rclimit": "200"
 }
+

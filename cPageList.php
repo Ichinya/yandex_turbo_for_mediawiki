@@ -7,9 +7,13 @@ class cPageList extends cContent
     private string $author;
     private bool $replaceAuthor;
     private cDB $db;
+    private $defaultDate = 0;
 
     public function __construct($config)
     {
+        if (!empty($config['defaultDate'])) {
+            $this->defaultDate = $config['defaultDate'];
+        }
         parent::__construct($config['urlAPI']);
         $this->author = $config['defaultAuthor'];
         $this->replaceAuthor = $config['replaceAuthor'];
@@ -26,7 +30,7 @@ class cPageList extends cContent
             $page = new cPage(
                 $pageIndex['pageid'],
                 $pageIndex['title'],
-                date(DATE_RFC822, time() - 86400));
+                date(DATE_RFC822, $this->defaultDate));
             $page->author = $this->author;
             $pages[] = $page;
         }

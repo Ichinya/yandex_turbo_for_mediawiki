@@ -95,13 +95,17 @@ class cParse extends cContent
         // получаем данные из БД
         $pageCache = $this->db->getPageById($page->id);
         // нет страницы в кэше
-        if (!$pageCache || $page->updateAt > $pageCache['updateAt'] || empty($page->revid)) {
+
+        if ($page->revid === 0) {
+            return false;
+        }
+
+        if (!$pageCache || strtotime($page->updateAt) > strtotime($pageCache['updateAt']) || empty($page->revid)) {
             // парсим страницу и записываем в БД
             $this->updatePageByPage($page);
             $this->db->updateCache($page);
         }
         // заполняем пустые поля ссылок на страницы
-        $this->fillingURL();
         return true;
     }
 

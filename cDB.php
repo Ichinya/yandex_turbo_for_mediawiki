@@ -3,17 +3,45 @@
 
 class cDB
 {
-    private $db;
+    public static SQLite3 $db;
+    public static $count_query;
+    public static array $query = [];
+    private static $getSQL;
 
     public function __construct()
     {
-        $this->db = new SQLite3("cache.db");
-        $this->createTablePage();
-        $this->createTableConfig();
+        if (!isset(self::$db) || self::$db === NULL) {
+            self::$db = new SQLite3("cache.db");
+            self::createTablePage();
+            self::createTableConfig();
+        }
+
+        self::$getSQL = self::$getSQL ?? $this->getConfig('getSQL');
+
+        if (self::$getSQL == null) {
+            self::$getSQL = true;
+            try {
+                self::$db->enableExceptions(true);
+                $sql = "SELECT * FROM config WHERE name = :name;";
+                $query = self::$db->prepare($sql);
+                $query->bindValue(':name', 'version');
+                self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql version";
+                $res = $query->execute()->fetchArray(SQLITE3_ASSOC);
+                if ($res == null) {
+                    $this->setConfig('version', SQLite3::version()['versionString']);
+                }
+            } catch (Exception $e) {
+                self::$getSQL = false;
+            }
+
+           $this->setConfig('getSQL', self::$getSQL);
+        }
     }
 
-    private function createTablePage()
+
+    static function createTablePage()
     {
+        self::$count_query++;
         $sql = "CREATE TABLE IF NOT EXISTS page (
                 id INTEGER UNIQUE, 
                 revid INTEGER,
@@ -23,16 +51,19 @@ class cDB
                 url TEXT, 
                 updateAt DATETIME,  
                 categories TEXT)";
-        return $this->db->exec($sql);
+        self::$query[] = $sql;
+        return self::$db->exec($sql);
     }
 
-    private function createTableConfig()
+    static function createTableConfig()
     {
+        self::$count_query++;
         $sql = "CREATE TABLE IF NOT EXISTS config (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
                 name VARCHAR UNIQUE ,
                 value varchar)";
-        return $this->db->exec($sql);
+        self::$query[] = $sql;
+        return self::$db->exec($sql);
     }
 
     /**
@@ -42,10 +73,12 @@ class cDB
      */
     public function getConfig($name)
     {
+        self::$count_query++;
         $sql = "SELECT * FROM config WHERE name = :name;";
-        $query = $this->db->prepare($sql);
+        $query = self::$db->prepare($sql);
         $query->bindValue(':name', $name);
-        $res =  $query->execute()->fetchArray(SQLITE3_ASSOC);
+        $res = $query->execute()->fetchArray(SQLITE3_ASSOC);
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql $name";
         return $res['value'];
     }
 
@@ -57,15 +90,17 @@ class cDB
      */
     public function setConfig($name, $value)
     {
-        if ($this->getConfig($name) === false) {
+        self::$count_query++;
+        if ($this->getConfig($name) === false || $this->getConfig($name) === null) {
             $sql = "INSERT INTO config (name, value) 
                 VALUES (:name, :value)";
         } else {
             $sql = "UPDATE config SET value = :value WHERE name = :name";
         }
-        $query = $this->db->prepare($sql);
+        $query = self::$db->prepare($sql);
         $query->bindValue(':name', $name);
         $query->bindValue(':value', $value);
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql $name - $value";
         if (!$query->execute()) {
             return false;
         }
@@ -74,16 +109,20 @@ class cDB
 
     public function getPageById(int $id)
     {
+        self::$count_query++;
         $sql = "SELECT * FROM page WHERE id = :id;";
-        $query = $this->db->prepare($sql);
+        $query = self::$db->prepare($sql);
         $query->bindValue(':id', $id);
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql $id";
         return $query->execute()->fetchArray(SQLITE3_ASSOC);
     }
 
     public function getEmptyPagesId()
     {
+        self::$count_query++;
         $sql = "SELECT id FROM page WHERE revid is null";
-        $query = $this->db->query($sql);
+        $query = self::$db->query($sql);
+        self::$query[] = $sql;
         $result = [];
         while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
             $result[$row['id']] = $row['id'];
@@ -93,8 +132,10 @@ class cDB
 
     public function getEmptyUrl()
     {
+        self::$count_query++;
         $sql = "SELECT id FROM page WHERE url is null;";
-        $query = $this->db->query($sql);
+        $query = self::$db->query($sql);
+        self::$query[] = $sql;
         $result = [];
         while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
             $result[] = $row['id'];
@@ -104,16 +145,20 @@ class cDB
 
     public function getCountPage()
     {
+        self::$count_query++;
         $sql = "SELECT COUNT() as count FROM page";
-        $query = $this->db->query($sql);
+        $query = self::$db->query($sql);
+        self::$query[] = $sql;
         return $query->fetchArray(SQLITE3_ASSOC)['count'];
     }
 
     public function getPageList(int $page, int $count)
     {
+        self::$count_query++;
         $offset = $count * $page;
         $sql = "SELECT * FROM page WHERE url not null ORDER BY updateAt ASC LIMIT {$count} OFFSET {$offset};";
-        $query = $this->db->query($sql);
+        $query = self::$db->query($sql);
+        self::$query[] = $sql;
         $result = [];
         while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
             if (preg_match('/Файл:.+/m', $row['title'])) {
@@ -141,10 +186,12 @@ class cDB
             return false;
         }
         foreach ($data as $id => $url) {
+            self::$count_query++;
             $sql = "UPDATE page SET url = :url WHERE id = :id";
-            $query = $this->db->prepare($sql);
+            $query = self::$db->prepare($sql);
             $query->bindValue(':id', $id);
             $query->bindValue(':url', $url);
+            self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql $id";
             if (!$query->execute()) {
                 return false;
             }
@@ -168,6 +215,7 @@ class cDB
 
     public function updateCache(cPage $page)
     {
+        self::$count_query++;
         if ($this->getPageById($page->id)) {
             $sql = "UPDATE page 
             SET revid = :revid, user = :user, title = :title, text=:text, updateAt=:updateAt, categories=:categories 
@@ -176,7 +224,7 @@ class cDB
             $sql = "INSERT INTO page (id,revid,user,title,text,updateAt,categories) 
                 VALUES(:id,:revid,:user,:title,:text,:updateAt,:categories)";
         }
-        $query = $this->db->prepare($sql);
+        $query = self::$db->prepare($sql);
         $query->bindValue(':id', $page->id);
         $query->bindValue(':revid', $page->revid);
         $query->bindValue(':user', $page->user);
@@ -184,12 +232,14 @@ class cDB
         $query->bindValue(':text', $this->clearText($page->text));
         $query->bindValue(':updateAt', $page->updateAt);
         $query->bindValue(':categories', implode(',', $page->categories));
-
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql {$page->id}";
         return $query->execute();
     }
 
+
+
     public function __destruct()
     {
-        $this->db->close();
+        self::$db->close();
     }
 }

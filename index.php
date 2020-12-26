@@ -1,6 +1,5 @@
 <?php
 $config = require_once('config.inc.php');
-
 spl_autoload_register(function ($class) {
     $file = $class . '.php';
     if (is_file($file)) {
@@ -13,7 +12,6 @@ spl_autoload_register(function ($class) {
 $list = new cPageList($config);
 // модуль парсинга страниц
 $parse = new cParse($config['urlAPI']);
-
 // инициализация кэша, если первый запуск, заполняем БД текущими статьями
 if (!$list->getConfigDB('init')) {
     if (!$list->getConfigDB('indexPage')) {
@@ -39,6 +37,7 @@ foreach ($list->listPage as $page) {
     // обновляем кэш
     $parse->updateCacheByPageId($page);
 }
+$parse->fillingURL();
 // модуль формирования RSS
 $rssTemplate = isset($_GET['template']) ? $_GET['template'] : $config['defaultTemplate'];
 $rss = new cRSS($rssTemplate);
@@ -57,4 +56,14 @@ if (isset($_GET['page'])) {
         echo $str = "http://{$config['here']}?{$strTemplate}page={$i}<br />";
     }
     echo "</pre>";
+}
+
+
+if (!isset($_GET['page']) && $config['debug']) {
+    $db = new cDB();
+    echo "Версия SQLite3: " . SQLite3::version()['versionString'];
+    echo '<pre>';
+    echo 'Количество запросов к кэшу: '.$db::$count_query.PHP_EOL;
+    print_r($db::$query);
+    echo '</pre>';
 }
