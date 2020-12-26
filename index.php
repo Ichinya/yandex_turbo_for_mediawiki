@@ -33,10 +33,8 @@ if (!$list->getConfigDB('init')) {
 
 $list->getPages();
 // проверяем все страницы
-foreach ($list->listPage as $page) {
-    // обновляем кэш
-    $parse->updateCacheByPageId($page);
-}
+
+$parse->updateCache($list->listPage);
 $parse->fillingURL();
 // модуль формирования RSS
 $rssTemplate = isset($_GET['template']) ? $_GET['template'] : $config['defaultTemplate'];

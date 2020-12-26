@@ -25,7 +25,7 @@ class cDB
                 $sql = "SELECT * FROM config WHERE name = :name;";
                 $query = self::$db->prepare($sql);
                 $query->bindValue(':name', 'version');
-                self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql version";
+                self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql version";
                 $res = $query->execute()->fetchArray(SQLITE3_ASSOC);
                 if ($res == null) {
                     $this->setConfig('version', SQLite3::version()['versionString']);
@@ -34,7 +34,7 @@ class cDB
                 self::$getSQL = false;
             }
 
-           $this->setConfig('getSQL', self::$getSQL);
+            $this->setConfig('getSQL', self::$getSQL);
         }
     }
 
@@ -78,7 +78,7 @@ class cDB
         $query = self::$db->prepare($sql);
         $query->bindValue(':name', $name);
         $res = $query->execute()->fetchArray(SQLITE3_ASSOC);
-        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql $name";
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql $name";
         return $res['value'];
     }
 
@@ -100,7 +100,7 @@ class cDB
         $query = self::$db->prepare($sql);
         $query->bindValue(':name', $name);
         $query->bindValue(':value', $value);
-        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql $name - $value";
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql $name - $value";
         if (!$query->execute()) {
             return false;
         }
@@ -113,8 +113,24 @@ class cDB
         $sql = "SELECT * FROM page WHERE id = :id;";
         $query = self::$db->prepare($sql);
         $query->bindValue(':id', $id);
-        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql $id";
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql $id";
         return $query->execute()->fetchArray(SQLITE3_ASSOC);
+    }
+
+    public function getPageByIds(array $ids)
+    {
+        if (count($ids) == 0) {
+            return [];
+        }
+        self::$count_query++;
+        $sql = "SELECT * FROM page WHERE id in (".implode(',', $ids).");";
+        $query = self::$db->query($sql);
+        self::$query[] = $sql;
+        $result = [];
+        while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
+            $result[$row['id']] = $row;
+        }
+        return $result;
     }
 
     public function getEmptyPagesId()
@@ -191,7 +207,7 @@ class cDB
             $query = self::$db->prepare($sql);
             $query->bindValue(':id', $id);
             $query->bindValue(':url', $url);
-            self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql $id";
+            self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql $id";
             if (!$query->execute()) {
                 return false;
             }
@@ -232,10 +248,9 @@ class cDB
         $query->bindValue(':text', $this->clearText($page->text));
         $query->bindValue(':updateAt', $page->updateAt);
         $query->bindValue(':categories', implode(',', $page->categories));
-        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL): "$sql {$page->id}";
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql {$page->id}";
         return $query->execute();
     }
-
 
 
     public function __destruct()

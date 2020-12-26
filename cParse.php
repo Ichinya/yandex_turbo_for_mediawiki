@@ -85,6 +85,32 @@ class cParse extends cContent
         return $page;
     }
 
+    private function getCachePage(array $pageList)
+    {
+        $ids = [];
+        foreach ($pageList as $page) {
+            $ids[] = $page->id;
+        }
+        return $this->db->getPageByIds($ids);
+    }
+
+    public function updateCache(array $pageList)
+    {
+        $cachePage = $this->getCachePage($pageList);
+        foreach ($pageList as $page) {
+            if ($page->revid === 0) {
+                continue;
+            }
+            if (!$cachePage[$page->id] ||
+                strtotime($page->updateAt) > strtotime($cachePage[$page->id]['updateAt']) ||
+                empty($page->revid)) {
+                // парсим страницу и записываем в БД
+                $this->updatePageByPage($page);
+                $this->db->updateCache($page);
+            }
+        }
+    }
+
     /**
      * Получаем актуальные данные из кэша, либо обновляем их
      * @param cPage $page
