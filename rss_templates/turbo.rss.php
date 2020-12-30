@@ -8,6 +8,7 @@ echo'<?xml version="1.0" encoding="UTF-8"?>'; ?>
      version="2.0">
     <channel>
         <!-- Информация о сайте-источнике -->
+        <turbo:cms_plugin>83615B851D9AF56F6A6EF23B51466CD0</turbo:cms_plugin>
         <title><?= $config['title']; ?>></title>
         <link><?= $config['link']; ?></link>
         <description><?= $config['description']; ?></description>
