@@ -8,9 +8,9 @@ class cParse extends cContent
 
     public function __construct($urlAPI)
     {
-        $this->fileParams = "params_url_parse.json";
+        $this->fileParams = "params/params_url_parse.json";
         $this->paramsParseUrl = parent::__construct($urlAPI);
-        $this->fileParams = "params_page_parse.json";
+        $this->fileParams = "params/params_page_parse.json";
         $this->params = parent::__construct($urlAPI);
         $this->db = new cDB();
     }

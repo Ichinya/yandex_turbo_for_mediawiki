@@ -6,4 +6,6 @@
 *.pdf
 *.psd
 *.sublime*
-/cache.db
+cache.db
+config.inc.php
+rss_templates/*.params.php

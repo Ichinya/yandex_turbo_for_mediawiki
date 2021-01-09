@@ -2,7 +2,7 @@
 
 class cPageList extends cContent
 {
-    protected string $fileParams = "params_page_list.json";
+    protected string $fileParams = "params/params_page_list.json";
     public array $listPage = [];
     private string $author;
     private bool $replaceAuthor;
@@ -23,7 +23,7 @@ class cPageList extends cContent
 
     public function init()
     {
-        $params = $this->initParamFile("params_init.json");
+        $params = $this->initParamFile("params/params_init.json");
         $pagesIndex = $this->getContentAll($params);
         $pages = [];
         foreach ($pagesIndex as $pageIndex) {
@@ -71,18 +71,6 @@ class cPageList extends cContent
         return $this->db->getEmptyPagesId();
     }
 
-    private function convertArrayToPage(array $pageDB): cPage
-    {
-        $page = new cPage($pageDB['id'], $pageDB['title'], $pageDB['updateAt']);
-        $page->url = $pageDB['url'];
-        $page->updateAt = $pageDB ['updateAt'];
-        $page->categories = ($pageDB['categories'] == '') ? [] : explode(',', $pageDB['categories']);
-        $page->user = $pageDB['user'];
-        $page->text = $pageDB['text'];
-        $page->revid = $pageDB['revid'];
-        return $page;
-    }
-
     public function getPageId($id)
     {
         $pageDB = $this->db->getPageById($id);
@@ -112,6 +100,11 @@ class cPageList extends cContent
     public function savePageDB(cPage $page)
     {
         return $this->db->updateCache($page);
+    }
+
+    private function convertArrayToPage(array $pageDB): cPage
+    {
+        return cPage::convertArrayToPage($pageDB);
     }
 
 }

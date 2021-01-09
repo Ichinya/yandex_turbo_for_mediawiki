@@ -13,6 +13,10 @@ class cRSS
         $this->rss = "rss_templates/{$template}.rss.php";
         $this->item = "rss_templates/{$template}.item.php";
         $paramsFile = "rss_templates/{$template}.params.php";
+        $defaultParamsFile = "rss_templates/{$template}.default_params.php";
+        if (!file_exists($paramsFile) && !copy($defaultParamsFile, $paramsFile)) {
+            exit('шаблон не найден');
+        }
         if (!file_exists($this->rss) || !file_exists($this->item) || !file_exists($paramsFile)) {
             exit('шаблон не найден');
         }
@@ -48,10 +52,10 @@ class cRSS
     /**
      * формирует по шаблону и переданных данных текст
      * @param string $part название шаблона
-     * @param array $data данные для шаблона
+     * @param array|null $data данные для шаблона
      * @return false|string сформированный текст
      */
-    private function getPartTemplate($part, array $data = null)
+    private function getPartTemplate(string $part, array $data = null)
     {
         ob_start();
         if (!empty($this->{$part})) {

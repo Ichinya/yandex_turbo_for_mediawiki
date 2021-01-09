@@ -2,7 +2,7 @@
 $server = $_SERVER['HTTP_HOST'];
 return [
     'defaultDate' => 1606780800, // 2020.12.01 00:00
-    'debug' => true,
+    'debug' => false,
     'server' => $server,
     'here' => $server . $_SERVER['REQUEST_URI'],
     // урл API wiki

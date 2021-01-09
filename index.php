@@ -1,7 +1,13 @@
 <?php
+if (!file_exists('config.inc.php') && !copy('default_config.php', 'config.inc.php')) {
+    echo 'ERROR';
+    die();
+}
 $config = require_once('config.inc.php');
+$currentVersion = "1.2.0";
+
 spl_autoload_register(function ($class) {
-    $file = $class . '.php';
+    $file = 'libs/'.$class . '.php';
     if (is_file($file)) {
         /** @noinspection PhpIncludeInspection */
         require_once $file;
@@ -31,9 +37,14 @@ if (!$list->getConfigDB('init')) {
     $list->setConfigDB('init', 1);
 }
 
+// проверяем версию скрипта с версией кэша
+cUpdate::checkUpdate($currentVersion);
+if (!empty($config['email'])) {
+    cUpdate::sendNotify($config['email']);
+}
+
 $list->getPages();
 // проверяем все страницы
-
 $parse->updateCache($list->listPage);
 $parse->fillingURL();
 // модуль формирования RSS
@@ -48,20 +59,11 @@ if (isset($_GET['page'])) {
 } else {
     // формируем список rss
     $countPage = ceil($list->countPageDB() / $rss->getMaxCount());
-    echo "<pre>";
-    for ($i = 0; $i < $countPage; $i++) {
-        $strTemplate = ($config['defaultTemplate'] == $rssTemplate) ? '' : "template={$rssTemplate}&";
-        echo $str = "http://{$config['here']}?{$strTemplate}page={$i}<br />";
-    }
-    echo "</pre>";
+    ob_start();
+    include('templates/index.php');
+    $html = ob_get_contents();
+    ob_end_clean();
+    echo $html;
 }
 
 
-if (!isset($_GET['page']) && $config['debug']) {
-    $db = new cDB();
-    echo "Версия SQLite3: " . SQLite3::version()['versionString'];
-    echo '<pre>';
-    echo 'Количество запросов к кэшу: '.$db::$count_query.PHP_EOL;
-    print_r($db::$query);
-    echo '</pre>';
-}

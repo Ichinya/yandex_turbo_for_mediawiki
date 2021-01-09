@@ -4,9 +4,11 @@
 class cDB
 {
     public static SQLite3 $db;
-    public static $count_query;
+    public static int $count_query = 0;
     public static array $query = [];
-    private static $getSQL;
+
+    public static array $config = [];
+    private static ?string $getSQL;
 
     public function __construct()
     {
@@ -16,25 +18,29 @@ class cDB
             self::createTableConfig();
         }
 
-        self::$getSQL = self::$getSQL ?? $this->getConfig('getSQL');
+        if (empty(self::$config)) {
 
-        if (self::$getSQL == null) {
-            self::$getSQL = true;
-            try {
-                self::$db->enableExceptions(true);
-                $sql = "SELECT * FROM config WHERE name = :name;";
-                $query = self::$db->prepare($sql);
-                $query->bindValue(':name', 'version');
-                self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql version";
-                $res = $query->execute()->fetchArray(SQLITE3_ASSOC);
-                if ($res == null) {
-                    $this->setConfig('version', SQLite3::version()['versionString']);
+            $this->readConfigFromBD();
+            self::$getSQL = self::$getSQL ?? $this->getConfig('getSQL');
+
+            if (self::$getSQL === null) {
+                self::$getSQL = true;
+                try {
+                    self::$db->enableExceptions(true);
+                    $sql = "SELECT * FROM config WHERE name = :name;";
+                    $query = self::$db->prepare($sql);
+                    $query->bindValue(':name', 'SQLite3_version');
+                    self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql version";
+                    $res = $query->execute()->fetchArray(SQLITE3_ASSOC);
+                    if ($res == null) {
+                        $this->setConfig('SQLite3_version', SQLite3::version()['versionString']);
+                    }
+                } catch (Exception $e) {
+                    self::$getSQL = false;
                 }
-            } catch (Exception $e) {
-                self::$getSQL = false;
-            }
 
-            $this->setConfig('getSQL', self::$getSQL);
+                $this->setConfig('getSQL', self::$getSQL);
+            }
         }
     }
 
@@ -67,19 +73,31 @@ class cDB
     }
 
     /**
+     * получение параметров из БД
+     * @return array резульат в виде массива
+     */
+    public function readConfigFromBD()
+    {
+        self::$count_query++;
+        $sql = "SELECT * FROM config ";
+        $query = self::$db->query($sql);
+        self::$query[] = $sql;
+        $result = [];
+        while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
+            $result[$row['name']] = $row['value'];
+        }
+        self::$config = $result;
+        return $result;
+    }
+
+    /**
      * получение параметра из БД
      * @param string $name имя параметра
      * @return string|false строковое значение параметра или false
      */
-    public function getConfig($name)
+    public function getConfig(string $name)
     {
-        self::$count_query++;
-        $sql = "SELECT * FROM config WHERE name = :name;";
-        $query = self::$db->prepare($sql);
-        $query->bindValue(':name', $name);
-        $res = $query->execute()->fetchArray(SQLITE3_ASSOC);
-        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql $name";
-        return $res['value'];
+        return self::$config[$name];
     }
 
     /**
@@ -88,7 +106,7 @@ class cDB
      * @param string $value значение параметра
      * @return bool
      */
-    public function setConfig($name, $value)
+    public function setConfig(string $name, string $value)
     {
         self::$count_query++;
         if ($this->getConfig($name) === false || $this->getConfig($name) === null) {
@@ -104,6 +122,7 @@ class cDB
         if (!$query->execute()) {
             return false;
         }
+        self::$config[$name] = $value;
         return true;
     }
 
@@ -123,7 +142,7 @@ class cDB
             return [];
         }
         self::$count_query++;
-        $sql = "SELECT * FROM page WHERE id in (".implode(',', $ids).");";
+        $sql = "SELECT * FROM page WHERE id in (" . implode(',', $ids) . ");";
         $query = self::$db->query($sql);
         self::$query[] = $sql;
         $result = [];
@@ -168,7 +187,7 @@ class cDB
         return $query->fetchArray(SQLITE3_ASSOC)['count'];
     }
 
-    public function getPageList(int $page, int $count)
+    public function getPageList(int $page, int $count):array
     {
         self::$count_query++;
         $offset = $count * $page;
@@ -226,6 +245,15 @@ class cDB
         foreach ($templateClear as $template) {
             $text = preg_replace($template, '', $text);
         }
+
+        $replace = [
+            '&#91;' => '[',
+            '&#93;' => ']',
+            '&lt;' => '<',
+            '&gt;' => '>'
+        ];
+        $text = str_replace(array_keys($replace), array_values($replace), $text);
+
         return $text;
     }
 
