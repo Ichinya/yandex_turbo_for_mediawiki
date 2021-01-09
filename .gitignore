@@ -7,5 +7,5 @@
 *.psd
 *.sublime*
 cache.db
-config.inc.php
-rss_templates/*.params.php
+/config.inc.php
+/rss_templates/*.params.php
