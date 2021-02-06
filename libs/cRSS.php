@@ -21,7 +21,7 @@ class cRSS
             exit('шаблон не найден');
         }
         /** @noinspection PhpIncludeInspection */
-        $this->params = require_once($paramsFile);
+        $this->params = require($paramsFile);
         return true;
     }
 

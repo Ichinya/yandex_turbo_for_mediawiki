@@ -4,10 +4,10 @@ if (!file_exists('config.inc.php') && !copy('default_config.php', 'config.inc.ph
     die();
 }
 $config = require_once('config.inc.php');
-$currentVersion = "1.2.0";
+$currentVersion = "1.3.0";
 
 spl_autoload_register(function ($class) {
-    $file = 'libs/'.$class . '.php';
+    $file = 'libs/' . $class . '.php';
     if (is_file($file)) {
         /** @noinspection PhpIncludeInspection */
         require_once $file;
@@ -51,14 +51,28 @@ $parse->fillingURL();
 $rssTemplate = isset($_GET['template']) ? $_GET['template'] : $config['defaultTemplate'];
 $rss = new cRSS($rssTemplate);
 
-if (isset($_GET['page'])) {
+if (isset($_GET['page']) || isset($_GET['template'])) {
     // формируем страницу rss
+    if (empty($_GET['page'])) {
+        $_GET['page'] = 0;
+    }
     $listPages = $list->getPageList($_GET['page'], $rss->getMaxCount());
     $lenta = $rss->generateRSS($listPages);
     echo($lenta);
 } else {
     // формируем список rss
-    $countPage = ceil($list->countPageDB() / $rss->getMaxCount());
+
+    $fileParams = glob("rss_templates/*.default_params.php");
+    $rssListTemplate = [];
+    foreach ($fileParams as $fileParam) {
+        $nameRss = preg_replace(['#rss_templates/#', '#\.default_params.php#'], '', $fileParam);
+        $currentRss = new cRSS($nameRss);
+        $rssListTemplate[$nameRss] = [
+            'rss' => $currentRss,
+            'maxCount' => $currentRss->getMaxCount()
+        ];
+    }
+
     ob_start();
     include('templates/index.php');
     $html = ob_get_contents();

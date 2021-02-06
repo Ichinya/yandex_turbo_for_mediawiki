@@ -1,8 +1,10 @@
 <?php
 /** @var string $currentVersion */
 /** @var string $rssTemplate */
+/** @var array $rssListTemplate */
 /** @var array $config */
 /** @var int $countPage */
+/** @var cPageList $list */
 ?>
 <!doctype html>
 <html lang="ru">
@@ -12,21 +14,29 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="shortcut icon" href="./templates/favicon.png">
-    <title>Яндекс Турбо для MediWiki</title>
+    <title>Яндекс Турбо для MediaWiki</title>
 </head>
 <body>
-<h1>Яндекс Турбо для MediWiki</h1>
+<h1>Яндекс Турбо для MediaWiki</h1>
 <div>версия <?= $currentVersion; ?></div>
 
 <h2>Список доступных лент</h2>
 <ol>
     <?php
-    for ($i = 0; $i < $countPage; $i++) {
-        $strTemplate = ($config['defaultTemplate'] == $rssTemplate) ? '' : "template={$rssTemplate}&";
-        $str = "http://{$config['here']}?{$strTemplate}page={$i}";
-        ?>
-        <li><a href="<?= $str; ?>"><?= $str; ?></a></li>
-        <?php
+
+    foreach ($rssListTemplate as $rssName => $rss) {
+
+        $maxCount = ($rssListTemplate[$rssName]['maxCount']);
+
+        $countPage = ceil($list->countPageDB() / $maxCount);
+        for ($i = 0; $i < $countPage; $i++) {
+            $url['template'] = ($config['defaultTemplate'] == $rssName) ? null : "{$rssName}";
+            $url['page'] = ($i == 0 && $url['template'] != '') ? null : "{$i}";
+            $str = "http://{$config['here']}?" . http_build_query($url);
+            ?>
+            <li><a href="<?= $str; ?>"><?= $str; ?></a></li>
+            <?php
+        }
     }
     ?>
 </ol>
