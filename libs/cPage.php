@@ -10,8 +10,8 @@ class cPage
     var $text;
     public array $categories = [];
     var $revid;
-    var $user;
-    var $url;
+    var string $user;
+    var string $url;
 
     public function __construct($id, $title, $time)
     {

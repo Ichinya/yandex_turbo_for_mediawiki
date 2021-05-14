@@ -5,6 +5,7 @@
 /** @var array $config */
 /** @var int $countPage */
 /** @var cPageList $list */
+/** @var array $notify */
 ?>
 <!doctype html>
 <html lang="ru">
@@ -19,6 +20,16 @@
 <body>
 <h1>Яндекс Турбо для MediaWiki</h1>
 <div>версия <?= $currentVersion; ?></div>
+
+<?php
+if (!empty($notify['warning'])) {
+    foreach ($notify['warning'] as $warning): ?>
+        <div style="color: red; font-weight: 800;">
+            <p><b>!!!</b> <?= $warning; ?></p>
+        </div>
+    <?php endforeach;
+}
+?>
 
 <h2>Список доступных лент</h2>
 <ol>
@@ -42,13 +53,11 @@
 </ol>
 
 <?php
-if (cUpdate::$needUpdateFromGit) {
-    ?>
+if (cUpdate::$needUpdateFromGit): ?>
     <div>Есть новая версия на <a href="https://github.com/Ichinya/yandex_turbo_for_mediawiki" target="_blank">GitHub</a>,
         рекомендуется обновить
     </div>
-    <?php
-}
+<?php endif;
 
 
 if (!isset($_GET['page']) && $config['debug']) {

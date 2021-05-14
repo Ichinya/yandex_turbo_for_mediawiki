@@ -40,7 +40,7 @@ class cUpdate
 
     public static function sendNotify(string $mail = ''): bool
     {
-        return mail($mail, 'Тема', 'Сообщение');
+        return mail($mail, 'Найдена новая версия плагина Яндекс.Турбо для движка mediawiki', 'Вышла новая версия плагина. Скачать можно по ссылке https://github.com/Ichinya/yandex_turbo_for_mediawiki');
     }
 
     /**
@@ -105,11 +105,17 @@ class cUpdate
     }
 
 
+    /**
+     * Запускаем обновление, в основном это обновления кэша, чтобы заново его не перестраивать и "не сбивать" даты
+     */
     private static function update()
     {
         self::update111to120();
     }
 
+    /**
+     * Обновление с версии 1.1.1 до 1.2.0 - изменение в кэше символов
+     */
     private static function update111to120()
     {
         $replace = [

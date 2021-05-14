@@ -4,7 +4,7 @@ if (!file_exists('config.inc.php') && !copy('default_config.php', 'config.inc.ph
     die();
 }
 $config = require_once('config.inc.php');
-$currentVersion = "1.3.0";
+$currentVersion = "1.3.1";
 
 spl_autoload_register(function ($class) {
     $file = 'libs/' . $class . '.php';
@@ -14,6 +14,7 @@ spl_autoload_register(function ($class) {
     }
 });
 
+$notify = [];
 // формируем список всех страниц
 $list = new cPageList($config);
 // модуль парсинга страниц
@@ -43,12 +44,15 @@ if (!empty($config['email'])) {
     cUpdate::sendNotify($config['email']);
 }
 
-$list->getPages();
+if (false === $list->getPages()) {
+    $notify['warning'][] = 'Нет доступа к API или в wiki не найдено страниц';
+}
 // проверяем все страницы
 $parse->updateCache($list->listPage);
+// заполняем пустые ссылки (при первом запуске формируются в кэше статьи без ссылок)
 $parse->fillingURL();
 // модуль формирования RSS
-$rssTemplate = isset($_GET['template']) ? $_GET['template'] : $config['defaultTemplate'];
+$rssTemplate = $_GET['template'] ?? $config['defaultTemplate'];
 $rss = new cRSS($rssTemplate);
 
 if (isset($_GET['page']) || isset($_GET['template'])) {
@@ -61,7 +65,6 @@ if (isset($_GET['page']) || isset($_GET['template'])) {
     echo($lenta);
 } else {
     // формируем список rss
-
     $fileParams = glob("rss_templates/*.default_params.php");
     $rssListTemplate = [];
     foreach ($fileParams as $fileParam) {

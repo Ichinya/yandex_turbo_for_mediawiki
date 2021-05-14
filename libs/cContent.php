@@ -44,7 +44,11 @@ class cContent
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $output = curl_exec($ch);
         curl_close($ch);
-        return json_decode($output, true);
+        $ret = json_decode($output, true);
+        if (empty($ret)) {
+            $ret = [];
+        }
+        return $ret;
     }
 
     /**
