@@ -45,7 +45,7 @@ class cDB
     }
 
 
-    static function createTablePage()
+    static function createTablePage(): bool
     {
         self::$count_query++;
         $sql = "CREATE TABLE IF NOT EXISTS page (
@@ -61,7 +61,7 @@ class cDB
         return self::$db->exec($sql);
     }
 
-    static function createTableConfig()
+    static function createTableConfig(): bool
     {
         self::$count_query++;
         $sql = "CREATE TABLE IF NOT EXISTS config (
@@ -74,9 +74,9 @@ class cDB
 
     /**
      * получение параметров из БД
-     * @return array резульат в виде массива
+     * @return array результат в виде массива
      */
-    public function readConfigFromBD()
+    public function readConfigFromBD(): array
     {
         self::$count_query++;
         $sql = "SELECT * FROM config ";
@@ -102,11 +102,11 @@ class cDB
 
     /**
      * Запись или обновление параметра в БД
-     * @param string $name имя парамтра
+     * @param string $name имя параметра
      * @param string $value значение параметра
      * @return bool
      */
-    public function setConfig(string $name, string $value)
+    public function setConfig(string $name, string $value): bool
     {
         self::$count_query++;
         if ($this->getConfig($name) === false || $this->getConfig($name) === null) {
@@ -136,7 +136,7 @@ class cDB
         return $query->execute()->fetchArray(SQLITE3_ASSOC);
     }
 
-    public function getPageByIds(array $ids)
+    public function getPageByIds(array $ids): array
     {
         if (count($ids) == 0) {
             return [];
@@ -152,7 +152,7 @@ class cDB
         return $result;
     }
 
-    public function getEmptyPagesId()
+    public function getEmptyPagesId(): array
     {
         self::$count_query++;
         $sql = "SELECT id FROM page WHERE revid is null";
@@ -165,7 +165,7 @@ class cDB
         return $result;
     }
 
-    public function getEmptyUrl()
+    public function getEmptyUrl(): array
     {
         self::$count_query++;
         $sql = "SELECT id FROM page WHERE url is null;";
@@ -191,7 +191,7 @@ class cDB
     {
         self::$count_query++;
         $offset = $count * $page;
-        $sql = "SELECT * FROM page WHERE url not null ORDER BY updateAt ASC LIMIT {$count} OFFSET {$offset};";
+        $sql = "SELECT * FROM page WHERE url not null ORDER BY updateAt ASC LIMIT $count OFFSET $offset;";
         $query = self::$db->query($sql);
         self::$query[] = $sql;
         $result = [];
@@ -252,12 +252,10 @@ class cDB
             '&lt;' => '<',
             '&gt;' => '>'
         ];
-        $text = str_replace(array_keys($replace), array_values($replace), $text);
-
-        return $text;
+        return str_replace(array_keys($replace), array_values($replace), $text);
     }
 
-    public function updateCache(cPage $page)
+    public function updateCache(cPage $page): SQLite3Result
     {
         self::$count_query++;
         if ($this->getPageById($page->id)) {
@@ -276,7 +274,7 @@ class cDB
         $query->bindValue(':text', $this->clearText($page->text));
         $query->bindValue(':updateAt', $page->updateAt);
         $query->bindValue(':categories', implode(',', $page->categories));
-        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql {$page->id}";
+        self::$query[] = (self::$getSQL) ? $query->getSQL(self::$getSQL) : "$sql $page->id";
         return $query->execute();
     }
 

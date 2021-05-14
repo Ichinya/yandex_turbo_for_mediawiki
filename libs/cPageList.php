@@ -40,6 +40,9 @@ class cPageList extends cContent
     function getPages()
     {
         $list = $this->getContentAll($this->params);
+        if (empty($list)) {
+            return false;
+        }
         foreach ($list as $item) {
             $this->listPage[$item['pageid']] = new cPage(
                 $item['pageid'],
