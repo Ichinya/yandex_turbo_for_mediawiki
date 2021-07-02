@@ -51,7 +51,7 @@ class cDB
         $sql = "CREATE TABLE IF NOT EXISTS page (
                 id INTEGER UNIQUE, 
                 revid INTEGER,
-                user TEXT,
+                `user` TEXT,
                 title VARCHAR, 
                 text TEXT,
                 url TEXT, 
@@ -66,8 +66,8 @@ class cDB
         self::$count_query++;
         $sql = "CREATE TABLE IF NOT EXISTS config (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-                name VARCHAR UNIQUE ,
-                value varchar)";
+                `name` VARCHAR UNIQUE ,
+                `value` VARCHAR)";
         self::$query[] = $sql;
         return self::$db->exec($sql);
     }
@@ -155,7 +155,7 @@ class cDB
     public function getEmptyPagesId(): array
     {
         self::$count_query++;
-        $sql = "SELECT id FROM page WHERE revid is null";
+        $sql = "SELECT id FROM page WHERE revid IS NULL";
         $query = self::$db->query($sql);
         self::$query[] = $sql;
         $result = [];
@@ -168,7 +168,7 @@ class cDB
     public function getEmptyUrl(): array
     {
         self::$count_query++;
-        $sql = "SELECT id FROM page WHERE url is null;";
+        $sql = "SELECT id FROM page WHERE url IS NULL;";
         $query = self::$db->query($sql);
         self::$query[] = $sql;
         $result = [];
@@ -187,7 +187,7 @@ class cDB
         return $query->fetchArray(SQLITE3_ASSOC)['count'];
     }
 
-    public function getPageList(int $page, int $count):array
+    public function getPageList(int $page, int $count): array
     {
         self::$count_query++;
         $offset = $count * $page;
@@ -260,7 +260,7 @@ class cDB
         self::$count_query++;
         if ($this->getPageById($page->id)) {
             $sql = "UPDATE page 
-            SET revid = :revid, user = :user, title = :title, text=:text, updateAt=:updateAt, categories=:categories 
+            SET revid = :revid, `user` = :user, title = :title, text=:text, updateAt=:updateAt, categories=:categories 
             WHERE id = :id";
         } else {
             $sql = "INSERT INTO page (id,revid,user,title,text,updateAt,categories) 

@@ -1,7 +1,7 @@
 <?php
 
 
-class cContent
+abstract class cContent
 {
     protected string $urlAPI;
     protected string $fileParams;
@@ -37,7 +37,7 @@ class cContent
      * @param array $params параметры обращения
      * @return array данные от АПИ
      */
-    protected function getContent(array $params): array
+    protected function getContent(array $params): ?array
     {
         $url = $this->urlAPI . "?" . http_build_query($params);
         $ch = curl_init($url);

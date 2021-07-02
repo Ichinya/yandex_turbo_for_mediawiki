@@ -24,7 +24,7 @@ class cPage
     public static function convertArrayToPage(array $pageDB): cPage
     {
         $page = new cPage($pageDB['id'], $pageDB['title'], $pageDB['updateAt']);
-        $page->url = $pageDB['url'];
+        $page->url = $pageDB['url'] ?? '';
         $page->updateAt = $pageDB ['updateAt'];
         $page->categories = ($pageDB['categories'] == '') ? [] : explode(',', $pageDB['categories']);
         $page->user = $pageDB['user'];

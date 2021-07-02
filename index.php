@@ -44,7 +44,7 @@ if (!empty($config['email'])) {
     cUpdate::sendNotify($config['email']);
 }
 
-if (false === $list->getPages()) {
+if (empty($list->getPages())) {
     $notify['warning'][] = 'Нет доступа к API или в wiki не найдено страниц';
 }
 // проверяем все страницы

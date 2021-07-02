@@ -37,13 +37,13 @@ if (!empty($notify['warning'])) {
 
     foreach ($rssListTemplate as $rssName => $rss) {
 
-        $maxCount = ($rssListTemplate[$rssName]['maxCount']);
+        $maxCount = ($rss['maxCount']);
 
         $countPage = ceil($list->countPageDB() / $maxCount);
         for ($i = 0; $i < $countPage; $i++) {
             $url['template'] = ($config['defaultTemplate'] == $rssName) ? null : "{$rssName}";
             $url['page'] = ($i == 0 && $url['template'] != '') ? null : "{$i}";
-            $str = "http://{$config['here']}?" . http_build_query($url);
+            $str = "https://{$config['here']}?" . http_build_query($url);
             ?>
             <li><a href="<?= $str; ?>"><?= $str; ?></a></li>
             <?php

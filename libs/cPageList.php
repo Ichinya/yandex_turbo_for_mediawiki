@@ -37,11 +37,11 @@ class cPageList extends cContent
         return $pages;
     }
 
-    function getPages()
+    function getPages(): ?array
     {
         $list = $this->getContentAll($this->params);
-        if (empty($list)) {
-            return false;
+        if (empty($list) || !is_array($list)) {
+            return null;
         }
         foreach ($list as $item) {
             $this->listPage[$item['pageid']] = new cPage(
